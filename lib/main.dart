@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:http_request/user_profile_model.dart';
-import 'dart:convert';
 
 void main() {
   runApp(MyApp());
@@ -15,7 +13,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  UserProfile userProfile = null as UserProfile;
+  UserProfile userProfile = UserProfile();
   final myController = TextEditingController();
 
   @override
@@ -37,19 +35,20 @@ class _MyAppState extends State<MyApp> {
             child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            (userProfile != null)
+            (userProfile.name.isNotEmpty)
                 ? _profile(userProfile)
                 : Container(
-              padding: EdgeInsets.all(30),
-              child: TextFormField(
-                decoration: InputDecoration(
-                  hintText: "Input Username",
-                ),
-                controller: myController,
-              ),
-            ),
+                    padding: EdgeInsets.all(30),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        hintText: "Input Username",
+                      ),
+                      controller: myController,
+                    ),
+                  ),
             ElevatedButton(
                 onPressed: () {
+                  print("myController.text ${myController.text}");
                   UserProfile.connectToAPI(myController.text).then((value) {
                     userProfile = value;
                     setState(() {});
@@ -61,23 +60,31 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-}
 
-Widget _profile(UserProfile userProfile) {
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    children: <Widget>[
-      Image.network(userProfile.avatar_url.toString(), width: 100),
-      Text(userProfile.login.toString()),
-      Text(userProfile.name.toString()),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          Text("Following : " + userProfile.following.toString()),
-          Text("Followers : " + userProfile.followers.toString()),
-          Text("Repositories : " + userProfile.public_repos.toString())
-        ],
-      ),
-    ],
-  );
+  Widget _profile(UserProfile userProfile) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        _buildGithubAvatar(),
+        Text(userProfile.login.toString()),
+        Text(userProfile.name.toString()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Text("Following : " + userProfile.following.toString()),
+            Text("Followers : " + userProfile.followers.toString()),
+            Text("Repositories : " + userProfile.publicRepos.toString())
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGithubAvatar() {
+    if (userProfile.avatarUrl.isNotEmpty) {
+      return Image.network(userProfile.avatarUrl.toString(), width: 100);
+    } else {
+      return SizedBox.shrink();
+    }
+  }
 }
